@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gợi ý Phương tiện - Tối ưu Phát thải CO2</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌱 Gợi ý Phương tiện Xanh</h1>
+            <p>Tính toán và so sánh lượng phát thải CO2 để chọn phương tiện tối ưu</p>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label for="distance">📍 Khoảng cách di chuyển (km):</label>
+                <input type="number" id="distance" placeholder="Nhập khoảng cách..." step="0.1" min="0">
+                <label for="weight">Nhập khối lượng hàng hóa (tấn):</label>
+                <input type="number" id="weight" placeholder="Nhập khối lượng..." step="0.1" min="0">
+            </div>
+            <button class="calculate-btn" onclick="calculateEmissions()">
+                🔍 Tính toán & Gợi ý
+            </button>
+        </div>
+
+        <div class="results-section hidden" id="results">
+            <h2 style="color: #2c3e50; margin-bottom: 20px; text-align: center;">📊 Kết quả so sánh</h2>
+            <div id="vehicleCards"></div>
+            <div class="recommendation" id="recommendation"></div>
+        </div>
+    </div>
+
+    <script>
+        let vehicles = [];
+
+        fetch('data.json')
+            .then(response => response.json())
+            .then(data => {
+                vehicles = data;
+            })
+            .catch(error => {
+                alert('Không thể tải dữ liệu phương tiện!');
+                console.error(error);
+            });
+
+        function calculateEmissions() {
+            const distance = parseFloat(document.getElementById('distance').value);
+
+            if (!distance || distance <= 0) {
+                alert('Vui lòng nhập khoảng cách hợp lệ!');
+                return;
+            }
+            const weight = parseFloat(document.getElementById('weight').value) || 0;
+            if (weight < 0) {
+                alert('Khối lượng hàng hóa không thể âm!');
+                return;
+            }
+            // Lọc phương tiện phù hợp với khối lượng hàng hóa
+            const filteredVehicles = vehicles.filter(vehicle => weight <= vehicle.maxWeight);
+            if (filteredVehicles.length === 0) {
+                alert('Không có phương tiện phù hợp với khối lượng hàng hóa đã nhập!');
+                return;
+            }
+
+            const results = filteredVehicles.map(vehicle => ({
+                ...vehicle,
+                totalEmission: distance * vehicle.emissionFactor * (1 + (weight / vehicle.maxWeight)),
+                fuelCost: distance * (vehicle.fuelConsumption / 100)
+            }));
+
+            // Sắp xếp theo lượng phát thải từ thấp đến cao
+            results.sort((a, b) => a.totalEmission - b.totalEmission);
+
+            displayResults(results, distance);
+        }
+
+        function displayResults(results, distance) {
+            const resultsSection = document.getElementById('results');
+            const vehicleCards = document.getElementById('vehicleCards');
+            const recommendation = document.getElementById('recommendation');
+
+            vehicleCards.innerHTML = '';
+
+            results.forEach((vehicle, index) => {
+                const card = document.createElement('div');
+                const cardClass = index === 0 ? 'best' : (index <= 2 ? 'good' : 'poor');
+
+                card.className = `vehicle-card ${cardClass}`;
+                card.innerHTML = `
+                    <div class="vehicle-info">
+                        <div class="vehicle-details">
+                            <h3>
+                                ${vehicle.name}
+                                ${index === 0 ? '<span class="eco-badge">KHUYẾN NGHỊ</span>' : ''}
+                            </h3>
+                            <p><strong>Loại:</strong> ${vehicle.type}</p>
+                            <p><strong>Nhiên liệu:</strong> ${vehicle.fuelType}</p>
+                            <p><strong>Tiêu hao:</strong> ${vehicle.fuelConsumption} L/100km</p>
+                            <p><strong>Hệ số phát thải:</strong> ${vehicle.emissionFactor} kg CO₂/km</p>
+                        </div>
+                        <div class="emission-info">
+                            <div class="emission-value">${vehicle.totalEmission.toFixed(2)}</div>
+                            <div class="emission-label">kg CO₂</div>
+                        </div>
+                    </div>
+                `;
+                vehicleCards.appendChild(card);
+            });
+
+            // Gợi ý
+            const bestVehicle = results[0];
+            const worstVehicle = results[results.length - 1];
+            const savings = worstVehicle.totalEmission - bestVehicle.totalEmission;
+
+            recommendation.innerHTML = `
+                <h3>💡 Khuyến nghị</h3>
+                <p><strong>${bestVehicle.name}</strong> là lựa chọn tốt nhất cho quãng đường ${distance} km</p>
+                <p>Tiết kiệm được <strong>${savings.toFixed(2)} kg CO₂</strong> so với phương tiện kém hiệu quả nhất</p>
+                ${bestVehicle.emissionFactor === 0 ?
+                    '<p>🌿 <strong>Xe điện không phát thải CO₂ trực tiếp - Lựa chọn hoàn hảo cho môi trường!</strong></p>' :
+                    '<p>🌱 Hãy cân nhắc chuyển sang phương tiện thân thiện với môi trường hơn</p>'
+                }
+            `;
+
+            resultsSection.classList.remove('hidden');
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Cho phép tính toán khi nhấn Enter
+        document.getElementById('distance').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                calculateEmissions();
+            }
+        });
+    </script>
+</body>
+
+</html>

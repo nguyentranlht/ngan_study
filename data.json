@@ -1,0 +1,47 @@
+[
+    {
+        "id": "PT01",
+        "name": "Xe tải diesel",
+        "type": "Xe tải diesel",
+        "fuelConsumption": 25,
+        "emissionFactor": 2.65,
+        "fuelType": "Diesel",
+        "maxWeight": 15
+    },
+    {
+        "id": "PT02",
+        "name": "Xe tải hybrid",
+        "type": "Xe tải hybrid",
+        "fuelConsumption": 15,
+        "emissionFactor": 1.5,
+        "fuelType": "Hybrid",
+        "maxWeight": 10
+    },
+    {
+        "id": "PT03",
+        "name": "Xe tải điện",
+        "type": "Xe tải điện",
+        "fuelConsumption": 0,
+        "emissionFactor": 0,
+        "fuelType": "Điện",
+        "maxWeight": 5
+    },
+    {
+        "id": "PT04",
+        "name": "Xe container",
+        "type": "Xe container",
+        "fuelConsumption": 35,
+        "emissionFactor": 3.8,
+        "fuelType": "Diesel",
+        "maxWeight": 30
+    },
+    {
+        "id": "PT05",
+        "name": "Xe bán tải",
+        "type": "Xe bán tải",
+        "fuelConsumption": 12,
+        "emissionFactor": 1.2,
+        "fuelType": "Xăng",
+        "maxWeight": 2
+    }
+]
